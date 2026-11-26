@@ -1,0 +1,75 @@
+const PATHS = {
+  folder: 'M3 6.5h6l2 2.5h10v10H3V6.5Z',
+  briefcase: 'M3 8h18v12H3zM8 8V5h8v3M3 13h18',
+  building: 'M4 21V4h10v17M14 9h6v12M7.5 8h3M7.5 12h3M7.5 16h3M17 13h.01M17 17h.01M2 21h20',
+  grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+  list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
+  board: 'M4 4h4.5v16H4zM9.75 4h4.5v10h-4.5zM15.5 4H20v13h-4.5z',
+  download: 'M12 4v11m0 0-4-4m4 4 4-4M5 20h14',
+  edit: 'M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4',
+  trash: 'M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13',
+  flag: 'M5 21V4m0 0h11l-2 4 2 4H5',
+  alert: 'M12 4 2.5 20h19L12 4Zm0 6v4.5m0 3h.01',
+  target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z',
+  filter: 'M4 5h16l-6 7.5V19l-4 2v-8.5L4 5Z',
+  pulse: 'M2.5 12h4.5l2.5-6 4 12 2.5-6h5.5',
+  mail: 'M3 6h18v12H3zM3 6l9 7 9-7',
+  phone: 'M5 4h3.5l1.5 4.5-2 1.5a11 11 0 0 0 6 6l1.5-2 4.5 1.5V19a1.5 1.5 0 0 1-1.6 1.5C10.5 20 4 13.5 3.5 5.6A1.5 1.5 0 0 1 5 4Z',
+  key: 'M14.5 13a5 5 0 1 0-4.8-3.7L3 16v4h4v-2h2v-2h2l1.4-1.4A5 5 0 0 0 14.5 13Zm1.5-6h.01',
+  link: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+  sun: 'M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-14v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+  container: 'M3 7.5 12 3l9 4.5v9L12 21l-9-4.5v-9Zm0 0 9 4.5m0 0 9-4.5M12 12v9',
+  helm: 'M12 2.5v4m0 11v4M2.5 12h4m11 0h4M5.3 5.3l2.8 2.8m7.8 7.8 2.8 2.8m0-13.4-2.8 2.8m-7.8 7.8-2.8 2.8M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
+  pipeline: 'M4 6h5v5H4zM15 13h5v5h-5zM9 8.5h3.5a2 2 0 0 1 2 2v2.5M4 13h5v5H4z',
+  layers: 'm12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5',
+  shield: 'M12 3 4.5 6v5.5c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5V6L12 3Zm-3 9 2 2 4-4',
+  git: 'M6 3v12m0 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm12-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 0c0 5-6 4-12 9',
+  terminal: 'M4 5h16v14H4zM7.5 9.5 10 12l-2.5 2.5M12 15h4',
+  activity: 'M3 12h4l3-8 4 16 3-8h4',
+  box: 'M4 7h16v13H4zM4 7l2-3h12l2 3M10 11h4',
+  bell: 'M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Zm4 4h4',
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 4.5 4.5',
+  check: 'm5 12.5 4.5 4.5L19 7.5',
+  lock: 'M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3',
+  bookmark: 'M6 3.5h12V21l-6-4-6 4V3.5Z',
+  play: 'M7 4.5v15l12-7.5-12-7.5Z',
+  star: 'm12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z',
+  flame: 'M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.7 2.6-5.6 3.6-9.3 2 1.2 3 3 3.2 4.8 1-.8 1.7-1.9 1.9-3.3 2.4 2 4.3 4.8 4.3 7.8 0 3.6-2.6 6.2-6.5 6.2Z',
+  trophy: 'M8 4h8v5a4 4 0 0 1-8 0V4Zm0 2H4.5a3 3 0 0 0 3.5 4M16 6h3.5a3 3 0 0 1-3.5 4M12 13v4m-4 3h8m-6-3h4',
+  users: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-6 9c0-3.3 2.7-6 6-6s6 2.7 6 6m1-9a3 3 0 1 0 0-6m2 15c0-2.6-1.3-4.8-3.2-5.7',
+  chart: 'M4 20V4m0 16h16M8 16v-4m4 4V8m4 8v-6',
+  settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.4-3a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2-1.2L14.5 3h-5l-.4 2.6c-.7.3-1.4.7-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1c.6.5 1.3.9 2 1.2l.4 2.6h5l.4-2.6c.7-.3 1.4-.7 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z',
+  logout: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  x: 'M6 6l12 12M18 6 6 18',
+  chevronLeft: 'm15 5-7 7 7 7',
+  chevronRight: 'm9 5 7 7-7 7',
+  clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13v4.5l3 2',
+  message: 'M4 5h16v11H9l-5 4V5Z',
+  upvote: 'm12 5 7 8h-4v6H9v-6H5l7-8Z',
+  certificate: 'M5 4h14v11H5zM8 8h8M8 11h5m2 4v5l2-1.5 2 1.5v-5',
+  flask: 'M9 3h6M10 3v6l-5.5 9.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7.5 15h9',
+  server: 'M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01',
+  plus: 'M12 5v14M5 12h14',
+  external: 'M14 4h6v6m0-6-9 9M18 14v6H4V6h6',
+  heart: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z',
+  pin: 'M12 21s-6-5.6-6-11a6 6 0 1 1 12 0c0 5.4-6 11-6 11Zm0-8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  ticket: 'M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V7Zm10 0v10',
+  calendar: 'M5 5h14v15H5zM5 10h14M9 3v4m6-4v4',
+  scan: 'M4 8V5h3m10 0h3v3M4 16v3h3m10 0h3v-3M7 12h10',
+  tag: 'M3 12V4h8l9 9-8 8-9-9Zm5-4.5h.01',
+  card: 'M3 6h18v12H3zM3 10h18M7 15h4',
+  seat: 'M6 11V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5M4 11h16v5H4zM6 16v4m12-4v4',
+};
+
+export default function Icon({ name, size = 18, stroke = 1.8, className = '', title }) {
+  const d = PATHS[name] || PATHS.box;
+  return (
+    <svg className={`icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden={title ? undefined : true} role={title ? 'img' : undefined}>
+      {title && <title>{title}</title>}
+      <path d={d} />
+    </svg>
+  );
+}

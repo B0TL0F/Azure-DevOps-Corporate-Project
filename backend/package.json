@@ -1,0 +1,53 @@
+{
+  "name": "shackpulse-api",
+  "version": "1.0.0",
+  "description": "ShackPulse — internal project portfolio API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/db/migrate.js",
+    "seed": "node src/db/seed.js",
+    "test": "jest --runInBand",
+    "test:ci": "jest --runInBand --ci --coverage --reporters=default --reporters=jest-junit"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.2",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.5",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
+    "prom-client": "^15.1.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "jest-junit": "^17.0.0",
+    "supertest": "^7.3.2"
+  },
+  "private": true,
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/tests/env.js"
+    ],
+    "coverageReporters": [
+      "text-summary",
+      "cobertura",
+      "html"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/server.js"
+    ]
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

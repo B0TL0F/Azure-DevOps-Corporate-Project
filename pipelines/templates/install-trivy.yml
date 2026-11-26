@@ -1,0 +1,34 @@
+# Installs Trivy on the agent (skipped if it is already there).
+# Tries three sources in turn and prints why each one failed, because a single silent installer
+# was what broke ShackTix's first runs ("Install Trivy exited with code 1" and nothing else).
+steps:
+  - script: |
+      set -uo pipefail
+      if command -v trivy >/dev/null 2>&1; then
+        echo "Trivy already installed: $(trivy --version | head -1)"; exit 0
+      fi
+      DEST="$(Agent.ToolsDirectory)/trivy"; mkdir -p "$DEST"
+      VER="$(trivyVersion)"; NUM="${VER#v}"
+
+      echo "1) Pinned release from GitHub ($VER)"
+      if curl -fsSL -o /tmp/trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/${VER}/trivy_${NUM}_Linux-64bit.tar.gz" \
+         && tar -xzf /tmp/trivy.tgz -C "$DEST" trivy; then
+        echo "   ok"
+      else
+        echo "   failed (exit $?), trying the next method"
+        echo "2) Aqua's apt repository"
+        if command -v apt-get >/dev/null && \
+           curl -fsSL https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor --yes -o /usr/share/keyrings/trivy.gpg && \
+           echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list >/dev/null && \
+           sudo apt-get update -qq && sudo apt-get install -y -qq trivy; then
+          echo "   ok"
+        else
+          echo "   failed, trying the next method"
+          echo "3) Aqua's install script"
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b "$DEST" "$VER" \
+            || { echo "##[error]All three Trivy install methods failed. Check the agent's internet access to github.com."; exit 1; }
+        fi
+      fi
+      echo "##vso[task.prependpath]$DEST"
+      "$DEST/trivy" --version 2>/dev/null | head -1 || trivy --version | head -1
+    displayName: Install Trivy $(trivyVersion)

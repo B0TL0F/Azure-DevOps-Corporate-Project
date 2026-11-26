@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shackpulse-dev
+  labels:
+    environment: dev
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: shackpulse-dev-quota
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 2Gi
+    limits.memory: 4Gi
+    pods: "20"

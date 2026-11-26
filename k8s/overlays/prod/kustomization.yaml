@@ -1,0 +1,51 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: shackpulse-prod
+resources:
+  - namespace.yaml
+  - ../../base
+labels:
+  - pairs:
+      environment: prod
+configMapGenerator:
+  - name: shackpulse-config
+    literals:
+      - NODE_ENV=production
+      - APP_ENV=prod
+      - LOG_LEVEL=info
+      - DB_HOST=__DB_HOST__
+      - DB_PORT=5432
+      - DB_NAME=shackpulse_prod
+      - DB_USER=shackpulse_prod
+      - DB_SSL=true
+      - MIGRATE_ON_START=true
+      - SEED_ON_START=true
+      - ALLOWED_EMAIL_DOMAINS=devopsshack.com
+      - DEMO_LOGINS=false
+      - APP_VERSION=__APP_VERSION__
+      - BUILD_ID=__BUILD_ID__
+      - COMMIT_SHA=__COMMIT_SHA__
+# The pipeline replaces the double-underscore placeholders in this file before running `kubectl apply -k`.
+images:
+  - name: shackpulse-api
+    newName: __ACR_LOGIN_SERVER__/shackpulse-api
+    newTag: "__IMAGE_TAG__"
+  - name: shackpulse-web
+    newName: __ACR_LOGIN_SERVER__/shackpulse-web
+    newTag: "__IMAGE_TAG__"
+replicas:
+  - name: shackpulse-api
+    count: 2
+  - name: shackpulse-web
+    count: 2
+patches:
+  - target:
+      kind: HTTPRoute
+      name: shackpulse
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: __APP_HOST__
+      - op: replace
+        path: /spec/parentRefs/0/sectionName
+        value: https-prod

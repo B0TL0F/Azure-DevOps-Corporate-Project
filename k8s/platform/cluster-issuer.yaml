@@ -1,0 +1,41 @@
+# Reference copy. infra/setup-azure.sh applies this once, with __LETSENCRYPT_EMAIL__ filled in.
+# HTTP-01 over Gateway API: cert-manager proves domain ownership by attaching a temporary HTTPRoute
+# to the shared Gateway's port-80 listener ("http") and serving Let's Encrypt's token from it.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: __LETSENCRYPT_EMAIL__
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: shackpulse-gateway
+                namespace: shackpulse-gateway
+                kind: Gateway
+                sectionName: http
+---
+# Same, against Let's Encrypt's test server: untrusted certificates but much higher rate limits.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: __LETSENCRYPT_EMAIL__
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: shackpulse-gateway
+                namespace: shackpulse-gateway
+                kind: Gateway
+                sectionName: http
