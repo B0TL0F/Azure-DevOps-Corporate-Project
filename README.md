@@ -78,34 +78,45 @@ The backend tests need a running PostgreSQL. By default they connect to `localho
 - The official nginx container images render files from `/etc/nginx/templates/*.template` into `/etc/nginx/conf.d/` at start, filling in environment variables.
 - For local development, `npm run dev` serves on port `5173` and forwards `/api` to `http://localhost:8080`.
 
-## Checkpoint (2026-11-27)
+## Checkpoint (2026-11-28)
 
-**Branch:** `stage1-docker-terraform` (not yet merged into `main`).
+**Branch:** `main`. All Azure resources of this project are destroyed.
 
 | Item | Status |
 |---|---|
-| `backend/Dockerfile` and `.dockerignore` | Written and reviewed. **Image not built or tested yet.** |
-| Terraform: resource group and container registry | Written and applied, then destroyed to save cost. |
-| Remote Terraform state | Not set up. State is local. |
-| Frontend Dockerfile and Docker Compose file | Not started |
+| Backend and frontend `Dockerfile` and `.dockerignore` | Written. Both images build in CI. **Containers not run or tested yet.** |
+| GitHub Actions workflow (`.github/workflows/ci.yaml`) | Backend tests (48), frontend lint and tests (18), report uploads and image builds. Passing. |
+| Terraform: resource group and container registry | Written and tested, then destroyed to save cost. |
+| Terraform: GitHub identity (`github-identity.tf`) with OIDC trust for `main` and `AcrPush` on the registry | Written, applied and verified, then destroyed. |
+| GitHub repository variables | Not added yet |
+| Push images to the registry from the workflow | Not started |
+| AKS, PostgreSQL, Kubernetes files, deployment | Not started |
+| Docker Compose, remote Terraform state | Not started |
+
+GitHub Actions replaces the Azure DevOps pipeline listed in the original plan.
 
 ### Continue on another device
 
 1. Install Git, the Azure CLI and Terraform 1.9 or newer.
-2. Clone the repository, then run `git switch stage1-docker-terraform`.
-3. Run `az login`.
+2. Clone this repository and stay on `main`. If it is already cloned, run `git switch main` and `git pull`.
+3. Run `az login` and check the selected subscription with `az account show`.
 4. Create `terraform/terraform.tfvars` (ignored by Git) with values for `subscription_id` and `acr_name`. The registry name used so far is `shubhamacr01`; it must be globally unique.
-5. In `terraform/`, run `terraform init`, `terraform plan`, then `terraform apply`. **The registry is billed while it exists.**
-6. From the repository root, build the image in Azure (no Docker Desktop needed):
-   `az acr build --registry <acr_name> --image shackpulse-api:v1 ./backend`
-7. Verify with `az acr repository show-tags --name <acr_name> --repository shackpulse-api -o table`
-8. When finished for the day, run `terraform destroy` in `terraform/`, on the same device that ran `apply`.
+5. In `terraform/`, run `terraform init`, `terraform plan`, then `terraform apply`. The plan should show 5 resources to add. **The registry is billed while it exists.**
+6. In GitHub, under **Settings > Secrets and variables > Actions > Variables**, add:
+   - `AZURE_CLIENT_ID`: `terraform output -raw github_client_id`. **It changes after every destroy and apply.**
+   - `AZURE_TENANT_ID`: `az account show --query tenantId -o tsv`
+   - `AZURE_SUBSCRIPTION_ID`: `az account show --query id -o tsv`
+7. When finished for the day, run `terraform destroy` in `terraform/`, on the same device that ran `apply`, because the Terraform state is local.
 
 ### Next steps
 
-1. Build and verify the backend image.
-2. Write the frontend Dockerfile, then the Docker Compose file.
-3. Set up remote Terraform state.
+1. Add the Azure login (OIDC) and the image push to `ci.yaml`, for pushes to `main` only. The job that logs in needs the `id-token: write` permission.
+2. Create AKS with Terraform and let it pull from the registry.
+3. Create PostgreSQL with Terraform.
+4. Write the Kubernetes files and deploy manually.
+5. Automate the deployment in GitHub Actions.
+
+Later improvements: security scanning, Key Vault, HTTPS, autoscaling, network policies, a separate PROD environment, monitoring, remote Terraform state and Docker Compose.
 
 ## DevOps work to build
 
@@ -113,7 +124,7 @@ The backend tests need a running PostgreSQL. By default they connect to `localho
 |---|---|
 | 1 | Dockerfiles and `.dockerignore` for both parts, and a Docker Compose file to run everything locally |
 | 2 | Terraform: resource group, container registry, Key Vault, PostgreSQL, Kubernetes cluster, identities with least privilege |
-| 3 | Azure DevOps pipeline: tests, lint, security scans, build and push images, deploy to DEV, approval, deploy to PROD |
+| 3 | GitHub Actions pipeline: tests, lint, security scans, build and push images, deploy to DEV, approval, deploy to PROD |
 | 4 | Kubernetes manifests or Helm charts: deployments, services, probes, autoscaling, ingress with HTTPS, network policies |
 | 5 | Secrets from Key Vault |
 | 6 | Monitoring with Prometheus and Grafana, and alerts |
