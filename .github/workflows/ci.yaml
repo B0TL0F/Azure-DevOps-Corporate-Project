@@ -1,0 +1,28 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  Build:
+    name: Image Build for ${{ matrix.context }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        context:
+        - ./backend
+        - ./frontend
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.1.0
+      - name: Build Docker images
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: ${{ matrix.context }}

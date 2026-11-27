@@ -78,6 +78,35 @@ The backend tests need a running PostgreSQL. By default they connect to `localho
 - The official nginx container images render files from `/etc/nginx/templates/*.template` into `/etc/nginx/conf.d/` at start, filling in environment variables.
 - For local development, `npm run dev` serves on port `5173` and forwards `/api` to `http://localhost:8080`.
 
+## Checkpoint (2026-11-27)
+
+**Branch:** `stage1-docker-terraform` (not yet merged into `main`).
+
+| Item | Status |
+|---|---|
+| `backend/Dockerfile` and `.dockerignore` | Written and reviewed. **Image not built or tested yet.** |
+| Terraform: resource group and container registry | Written and applied, then destroyed to save cost. |
+| Remote Terraform state | Not set up. State is local. |
+| Frontend Dockerfile and Docker Compose file | Not started |
+
+### Continue on another device
+
+1. Install Git, the Azure CLI and Terraform 1.9 or newer.
+2. Clone the repository, then run `git switch stage1-docker-terraform`.
+3. Run `az login`.
+4. Create `terraform/terraform.tfvars` (ignored by Git) with values for `subscription_id` and `acr_name`. The registry name used so far is `shubhamacr01`; it must be globally unique.
+5. In `terraform/`, run `terraform init`, `terraform plan`, then `terraform apply`. **The registry is billed while it exists.**
+6. From the repository root, build the image in Azure (no Docker Desktop needed):
+   `az acr build --registry <acr_name> --image shackpulse-api:v1 ./backend`
+7. Verify with `az acr repository show-tags --name <acr_name> --repository shackpulse-api -o table`
+8. When finished for the day, run `terraform destroy` in `terraform/`, on the same device that ran `apply`.
+
+### Next steps
+
+1. Build and verify the backend image.
+2. Write the frontend Dockerfile, then the Docker Compose file.
+3. Set up remote Terraform state.
+
 ## DevOps work to build
 
 | Stage | What |
