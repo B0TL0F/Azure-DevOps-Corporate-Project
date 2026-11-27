@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+coverage
+test-results
+junit.xml
+*.log
+.env*
+*.local
+Dockerfile
+.dockerignore
