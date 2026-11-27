@@ -7,3 +7,7 @@ junit.xml
 .env.*
 *.log
 .DS_Store
+.terraform/
+*.tfstate*
+*.tfvars
+*.tfplan
