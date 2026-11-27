@@ -1,9 +1,0 @@
-node_modules
-coverage
-tests
-test-results
-junit.xml
-.env*
-*.log
-Dockerfile
-.dockerignore
