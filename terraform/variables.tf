@@ -19,3 +19,8 @@ variable "acr_name" {
   type        = string
   description = "Container Registry Name"
 }
+
+variable "my_ip_cidr" {
+  type        = string
+  description = "My Public IP"
+}
