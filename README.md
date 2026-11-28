@@ -80,41 +80,44 @@ The backend tests need a running PostgreSQL. By default they connect to `localho
 
 ## Checkpoint (2026-11-28)
 
-**Branch:** `main`. All Azure resources of this project are destroyed.
+**Branch:** `main`. **Current work:** moving to k3s on one Azure VM, in place of AKS (lower cost, small vCPU quota). One VM is not highly available.
 
 | Item | Status |
 |---|---|
-| Backend and frontend `Dockerfile` and `.dockerignore` | Written. Both images build in CI. **Containers not run or tested yet.** |
-| GitHub Actions workflow (`.github/workflows/ci.yaml`) | Backend tests (48), frontend lint and tests (18), report uploads and image builds. Passing. |
-| Terraform: resource group and container registry | Written and tested, then destroyed to save cost. |
-| Terraform: GitHub identity (`github-identity.tf`) with OIDC trust for `main` and `AcrPush` on the registry | Written, applied and verified, then destroyed. |
-| GitHub repository variables | Not added yet |
-| Push images to the registry from the workflow | Not started |
-| AKS, PostgreSQL, Kubernetes files, deployment | Not started |
-| Docker Compose, remote Terraform state | Not started |
+| Backend and frontend `Dockerfile` and `.dockerignore` | Done. Images build in CI. **Containers not run or tested yet.** |
+| GitHub Actions (`.github/workflows/ci.yaml`) | Done: tests, lint, image builds, and on `main` an OIDC login and push to ACR tagged with the commit SHA. Verified working. |
+| Terraform: resource group, registry, GitHub identity | Done and verified. |
+| GitHub repository variables | Added: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `ACR_LOGIN_SERVER` |
+| Terraform: `network.tf` (VNet, subnet) and `security.tf` (NSG: SSH from my IP only, 80 and 443 open, no 6443) | Written. Valid, planned, **never applied**. |
+| Change region to `southindia` | **Not done.** The default `location` is still `centralindia`. |
+| `vm.tf`, VM identity with registry access, cloud-init for k3s | Not started |
+| PostgreSQL, Kubernetes files, deployment, remote state, Docker Compose | Not started |
 
-GitHub Actions replaces the Azure DevOps pipeline listed in the original plan.
+### VM size findings (checked 2026-11-28)
+
+- In `centralindia`, the search for unrestricted 2 vCPU, 4 to 8 GB x64 sizes found only confidential VM (DC-series) sizes.
+- Chosen: `Standard_B2as_v2` (2 vCPU, 8 GB) in `southindia`. Retail Linux price seen: about USD 0.11 per hour, excluding disk, public IP, registry, data transfer and tax. Regional quota there: 4 vCPUs.
 
 ### Continue on another device
 
 1. Install Git, the Azure CLI and Terraform 1.9 or newer.
 2. Clone this repository and stay on `main`. If it is already cloned, run `git switch main` and `git pull`.
 3. Run `az login` and check the selected subscription with `az account show`.
-4. Create `terraform/terraform.tfvars` (ignored by Git) with values for `subscription_id` and `acr_name`. The registry name used so far is `shubhamacr01`; it must be globally unique.
-5. In `terraform/`, run `terraform init`, `terraform plan`, then `terraform apply`. The plan should show 5 resources to add. **The registry is billed while it exists.**
-6. In GitHub, under **Settings > Secrets and variables > Actions > Variables**, add:
-   - `AZURE_CLIENT_ID`: `terraform output -raw github_client_id`. **It changes after every destroy and apply.**
-   - `AZURE_TENANT_ID`: `az account show --query tenantId -o tsv`
-   - `AZURE_SUBSCRIPTION_ID`: `az account show --query id -o tsv`
-7. When finished for the day, run `terraform destroy` in `terraform/`, on the same device that ran `apply`, because the Terraform state is local.
+4. Create `terraform/terraform.tfvars` (ignored by Git) with:
+   - `subscription_id`
+   - `acr_name` (used so far: `shubhamacr01`; must be globally unique)
+   - `my_ip_cidr`: your current public IPv4 address followed by `/32`, in quotes. It differs between networks.
+5. Terraform state is local and is not in Git. Destroy resources on the device that created them. To check that nothing is left: `az group exists --name rg-shackpulse` should print `false`.
 
 ### Next steps
 
-1. Add the Azure login (OIDC) and the image push to `ci.yaml`, for pushes to `main` only. The job that logs in needs the `id-token: write` permission.
-2. Create AKS with Terraform and let it pull from the registry.
-3. Create PostgreSQL with Terraform.
-4. Write the Kubernetes files and deploy manually.
-5. Automate the deployment in GitHub Actions.
+1. Confirm that all Azure resources are destroyed.
+2. Change the default `location` in `terraform/variables.tf` to `southindia`. Run `terraform plan`; it should show 9 resources to add.
+3. Write `vm.tf`: public IP, network interface and Linux VM (`Standard_B2as_v2`, SSH key login). Do not apply until it is reviewed. Stop (deallocate) or destroy the VM after each session.
+4. Give the VM a managed identity with `AcrPull`, and set up k3s authentication to the registry (ACR tokens expire).
+5. Install k3s with cloud-init. k3s includes Traefik. Reach the Kubernetes API through an SSH tunnel.
+6. After each `terraform apply`, update the GitHub variable `AZURE_CLIENT_ID` (`terraform output -raw github_client_id`), then run the workflow on `main` to push the images again. While Azure resources are destroyed, the push job on `main` fails. Add `[skip ci]` to a commit message to skip the workflow.
+7. PostgreSQL, Kubernetes files, manual deployment, then automated deployment (consider Azure VM Run Command with OIDC; avoid a self-hosted runner on a public repository).
 
 Later improvements: security scanning, Key Vault, HTTPS, autoscaling, network policies, a separate PROD environment, monitoring, remote Terraform state and Docker Compose.
 
